@@ -2,7 +2,7 @@
 
 This folder helps you create the `checksum.txt` file required for a PRIDE submission.
 
-It uses a small program to generate SHA-1 checksums in the format expected by PRIDE.
+It uses a small program to generate SHA-1 checksums in the format expected by PRIDE. For the official background and requirements, see the [PRIDE checksum documentation](https://www.ebi.ac.uk/pride/markdownpage/checksum).
 
 ## What's in this folder?
 
@@ -105,7 +105,7 @@ Also avoid:
 
 ## Output Format
 
-The generated file uses PRIDE's tab-separated SHA-1 format:
+The generated file follows the tab-separated SHA-1 format described in the [PRIDE checksum documentation](https://www.ebi.ac.uk/pride/markdownpage/checksum):
 
 ```text
 # SHA-1 Checksum 
