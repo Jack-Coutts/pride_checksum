@@ -1,17 +1,13 @@
 @echo off
 setlocal
 
-set "UV_EXE="
+set "HELPER_EXE=%~dp0bin\windows-amd64\pride-checksum-helper.exe"
 
-where uv >nul 2>&1
-if not errorlevel 1 set "UV_EXE=uv"
-
-if "%UV_EXE%"=="" if exist "%USERPROFILE%\.local\bin\uv.exe" set "UV_EXE=%USERPROFILE%\.local\bin\uv.exe"
-
-if "%UV_EXE%"=="" (
-  echo uv is not installed or could not be found.
+if not exist "%HELPER_EXE%" (
+  echo pride-checksum-helper.exe is missing from:
+  echo %HELPER_EXE%
   echo.
-  echo Please double-click install.bat first, then try again.
+  echo Please download the latest version of this folder, or ask the maintainer to run build_binaries.sh.
   pause
   exit /b 1
 )
@@ -35,26 +31,18 @@ if not exist "%DATA_FOLDER%\" (
   exit /b 1
 )
 
-echo Creating PRIDE checksum file for:
-echo %DATA_FOLDER%
-echo.
-
-"%UV_EXE%" tool run --from pride-checksum pride_checksum --files_dir "%DATA_FOLDER%" --out_path "%DATA_FOLDER%"
+"%HELPER_EXE%" "%DATA_FOLDER%"
 if errorlevel 1 (
   echo.
   echo Something went wrong.
   echo.
   echo Common causes:
-  echo - uv or pride-checksum is not installed. Run install.bat first.
   echo - One or more filenames contain spaces or special characters.
-  echo - The folder contains duplicate filenames.
+  echo - The folder contains subfolders or unreadable files.
   echo.
   pause
   exit /b 1
 )
 
 echo.
-echo Done.
-echo checksum.txt was saved in:
-echo %DATA_FOLDER%
 pause
