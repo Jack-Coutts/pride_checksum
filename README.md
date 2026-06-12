@@ -120,6 +120,16 @@ file2.xml	356a192b7913b04c54574d18c28d46e6395428ab
 - **Missing program file**: make sure you have the full folder, including the `bin/` directory. If files are missing, download the latest copy of this folder, or ask the maintainer to rebuild it.
 - **Large files take a long time**: this is normal. Progress is printed while each file is being read.
 
+## What is a SHA-1 checksum?
+
+A SHA-1 checksum is a short fingerprint of a file's contents.
+
+This helper reads each file, calculates that fingerprint, and writes it into `checksum.txt`. If the file changes later, even by a single byte, the fingerprint changes too.
+
+PRIDE uses these fingerprints to check that uploaded files were not corrupted or altered during transfer. It is a file integrity check, not a judgement of whether the data itself is scientifically correct.
+
+For more background, see the [PRIDE checksum documentation](https://www.ebi.ac.uk/pride/markdownpage/checksum).
+
 ## For Maintainers
 
 The files in `bin/` are built from the Go source code in `main.go`.
