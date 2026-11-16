@@ -19,8 +19,6 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       # A ")" in either path used to end a batch block early and close the window.
       - name: Run the launcher from and on paths with brackets
         shell: cmd
@@ -37,18 +35,4 @@ jobs:
           type "%DATA%\checksum.txt" || exit /b 1
           cmd /d /c ""%TOOL%\run_checksum.bat" "%DATA%\missing"" < NUL
           if not errorlevel 1 exit /b 1
-          exit /b 0
-      - name: One-off reproduction with the old launcher
-        shell: cmd
-        run: |
-          set "TOOL=%RUNNER_TEMP%\tool (1)"
-          set "DATA=%RUNNER_TEMP%\data (old)\run (repeat)"
-          git checkout aa1bea7 -- run_checksum.bat || exit /b 1
-          copy /y run_checksum.bat "%TOOL%\" || exit /b 1
-          del "%DATA%\checksum.txt"
-          cmd /d /c ""%TOOL%\run_checksum.bat" "%DATA%"" < NUL > old.log 2>&1
-          echo exit code %errorlevel%
-          type old.log
-          findstr /c:"was unexpected at this time" old.log || exit /b 1
-          if exist "%DATA%\checksum.txt" exit /b 1
           exit /b 0
