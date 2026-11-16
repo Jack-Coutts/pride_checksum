@@ -136,3 +136,57 @@ func TestRunRejectsEmptyWatersRawFolder(t *testing.T) {
 		t.Fatalf("checksum.txt should not be written, stat err: %v", err)
 	}
 }
+
+func TestRunRefusesDamagedZip(t *testing.T) {
+	dir := t.TempDir()
+	makeRawFolder(t, dir)
+	if err := run([]string{dir}); err != nil {
+		t.Fatalf("run failed: %v", err)
+	}
+	zipPath := filepath.Join(dir, "sample_1.raw.zip")
+
+	reader, err := zip.OpenReader(zipPath)
+	if err != nil {
+		t.Fatalf("open zip: %v", err)
+	}
+	var offset int64
+	for _, file := range reader.File {
+		if file.Name == "sample_1.raw/sub/_FUNC001.DAT" {
+			if offset, err = file.DataOffset(); err != nil {
+				t.Fatalf("data offset: %v", err)
+			}
+		}
+	}
+	reader.Close()
+
+	damaged, err := os.ReadFile(zipPath)
+	if err != nil {
+		t.Fatalf("read zip: %v", err)
+	}
+	damaged[offset+5] ^= 0xff
+	writeFile(t, zipPath, string(damaged))
+
+	if err := run([]string{dir}); err == nil || !strings.Contains(err.Error(), "damaged") {
+		t.Fatalf("expected a damaged zip error, got %v", err)
+	}
+}
+
+func TestRunRemovesLeftoverTempZip(t *testing.T) {
+	dir := t.TempDir()
+	makeRawFolder(t, dir)
+	if err := run([]string{dir}); err != nil {
+		t.Fatalf("run failed: %v", err)
+	}
+	writeFile(t, filepath.Join(dir, "sample_1.raw.zip.tmp"), "partial")
+
+	if err := run([]string{dir}); err != nil {
+		t.Fatalf("run failed: %v", err)
+	}
+	got, err := os.ReadFile(filepath.Join(dir, checksumFileName))
+	if err != nil {
+		t.Fatalf("read checksum: %v", err)
+	}
+	if strings.Contains(string(got), ".tmp") {
+		t.Fatalf("leftover temporary zip was checksummed:\n%s", got)
+	}
+}

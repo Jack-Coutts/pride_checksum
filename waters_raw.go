@@ -63,7 +63,16 @@ func ensureRawZip(index, total int, dataFolder, folder string) error {
 		return err
 	}
 
+	// An interrupted run leaves this behind, and it would be checksummed as a submission file.
+	if err := os.Remove(zipPath + ".tmp"); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return withHints(
+			fmt.Errorf("could not remove leftover %q: %w", zipName+".tmp", err),
+			"Delete it by hand, then run again.",
+		)
+	}
+
 	if _, err := os.Stat(zipPath); err == nil {
+		fmt.Printf("[ %d / %d ] Checking existing zip: %s\n", index, total, zipName)
 		if err := checkExistingRawZip(zipPath, folder, entries); err != nil {
 			return err
 		}
@@ -167,6 +176,18 @@ func checkExistingRawZip(zipPath, folder string, entries []rawEntry) error {
 	}
 	if len(zipped) != files {
 		return stale("the zip holds files that are not in the folder")
+	}
+
+	// Reading to the end makes Go verify each file's CRC, so a damaged zip is not reused.
+	for _, file := range reader.File {
+		source, err := file.Open()
+		if err == nil {
+			_, err = io.Copy(io.Discard, source)
+			source.Close()
+		}
+		if err != nil {
+			return stale(fmt.Sprintf("%s is damaged in the zip (%v)", file.Name, err))
+		}
 	}
 	return nil
 }
