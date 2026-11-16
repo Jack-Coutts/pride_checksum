@@ -30,9 +30,13 @@ jobs:
           copy run_checksum.bat "%TOOL%\" || exit /b 1
           copy bin\windows-amd64\pride-checksum-helper.exe "%TOOL%\bin\windows-amd64\" || exit /b 1
           echo x> "%DATA%\sample_01.raw"
+          mkdir "%DATA%\sample_02.raw" || exit /b 1
+          echo x> "%DATA%\sample_02.raw\_HEADER.TXT"
           cmd /d /c ""%TOOL%\run_checksum.bat" "%DATA%"" < NUL
           if errorlevel 1 exit /b 1
           type "%DATA%\checksum.txt" || exit /b 1
+          findstr /b /c:"sample_02.raw.zip" "%DATA%\checksum.txt" || exit /b 1
+          tar -tf "%DATA%\sample_02.raw.zip" | findstr /c:"sample_02.raw/_HEADER.TXT" || exit /b 1
           cmd /d /c ""%TOOL%\run_checksum.bat" "%DATA%\missing"" < NUL
           if not errorlevel 1 exit /b 1
           exit /b 0

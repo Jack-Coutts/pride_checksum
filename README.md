@@ -40,8 +40,22 @@ Put all the files you want to submit to PRIDE in one folder.
 Important:
 
 - All submission files must be directly inside that folder.
-- Subfolders are not supported.
+- Subfolders are not supported, except Waters `.raw` folders (see below).
 - The helper only processes regular files in the top level of the folder.
+
+### Waters `.raw` folders
+
+Waters instruments save each run as a folder whose name ends in `.raw`. PRIDE only accepts files, so each of these folders must be zipped on its own. See the [PRIDE submission format guidelines](https://github.com/PRIDE-Archive/pride-resources/blob/main/guidelines/pride-submission-formats-guidelines.md).
+
+The helper does this for you:
+
+- Each `sample.raw` folder is zipped into `sample.raw.zip` next to it, with the folder structure kept.
+- `checksum.txt` lists the zip. Upload the zip, not the folder.
+- The original folder is left untouched.
+- Zipping makes a second copy of the data, so check there is enough free space. Large runs take a while.
+- If you run the helper again, it reuses a zip that still matches its folder. If the folder has changed since, the helper stops and asks you to delete the old zip.
+
+Other folder-based formats, such as Bruker or Agilent `.d` folders, are not zipped for you. Zip each one yourself before running the helper.
 
 ### Windows
 
@@ -70,6 +84,7 @@ chmod +x run_checksum.sh
 
 ## What Happens During a Run
 
+- Any Waters `.raw` folders are zipped first.
 - The helper prints progress as it processes each file.
 - `checksum.txt` is only written at the end, after every file has been hashed successfully.
 - While the run is in progress, a temporary file called `checksum.txt.tmp` may appear.
@@ -101,7 +116,7 @@ experiment@02.mzML
 Also avoid:
 
 - Hidden files starting with `.`
-- Subfolders inside the data folder
+- Subfolders inside the data folder, other than Waters `.raw` folders
 
 ## Output Format
 
@@ -132,7 +147,7 @@ For more background, see the [PRIDE checksum documentation](https://www.ebi.ac.u
 
 ## For Maintainers
 
-The files in `bin/` are built from the Go source code in `main.go`.
+The files in `bin/` are built from the Go source code in `main.go` and `waters_raw.go`.
 
 If you change the program, rebuild the ready-to-run copies with:
 

@@ -83,9 +83,20 @@ func run(args []string) error {
 		return fmt.Errorf("this does not look like a folder: %s", dataFolder)
 	}
 
+	// Check every name before the slow zipping starts.
 	files, err := collectFiles(dataFolder)
 	if err != nil {
 		return err
+	}
+	zipped, err := zipWatersRawFolders(dataFolder)
+	if err != nil {
+		return err
+	}
+	if zipped > 0 {
+		fmt.Println()
+		if files, err = collectFiles(dataFolder); err != nil {
+			return err
+		}
 	}
 	if len(files) == 0 {
 		return fmt.Errorf("no submission files found in %s", dataFolder)
@@ -140,11 +151,14 @@ func collectFiles(dataFolder string) ([]submissionFile, error) {
 			continue
 		}
 
-		if entry.IsDir() {
+		if entry.IsDir() && !isWatersRawFolder(name) {
 			return nil, fmt.Errorf("PRIDE checksum input must contain files only; found folder %q", name)
 		}
 		if err := validateFileName(name); err != nil {
 			return nil, err
+		}
+		if entry.IsDir() {
+			continue // run zips it, and the zip is the submission file
 		}
 
 		fullPath := filepath.Join(dataFolder, name)
